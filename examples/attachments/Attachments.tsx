@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { FileDownload, FileUpload, russianLabels } from '@59alex/file-streams-react';
+import { ActionAttachment } from './ActionAttachment.js';
 import { CancelableImport } from './CancelableImport.js';
 import type { UploadCommit } from '@59alex/file-streams';
 
@@ -41,5 +42,6 @@ export function Attachments() {
       {!canSave && <p>Браузер не поддерживает диалог потокового сохранения. Передайте свой WritableStream в hook.</p>}
     </>}
     <CancelableImport />
+    <ActionAttachment accountId="demo-account" />
   </main>;
 }

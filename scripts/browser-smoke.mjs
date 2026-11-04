@@ -13,6 +13,18 @@ try {
   await page.addInitScript(() => {
     // Test-only picker: retain the small fixture so byte equality can be asserted.
     // Только тестовый диалог: сохраняем небольшой fixture для сравнения байтов.
+    // Gate only the observed response; the real request still reaches Java over HTTP/2.
+    // Задерживаем только наблюдение ответа; реальный запрос достигает Java через HTTP/2.
+    const originalFetch = window.fetch.bind(window);
+    const actionResponse = new Promise(resolve => { window.releaseActionResponse = resolve; });
+    window.fetch = async (...args) => {
+      const response = await originalFetch(...args);
+      if (String(args[0]).includes('action-attachment.bin') && args[1]?.method === 'PUT') {
+        window.actionServerResponded = true;
+        await actionResponse;
+      }
+      return response;
+    };
     window.savedBytes = [];
     window.showSaveFilePicker = async () => ({ createWritable: async () => new WritableStream({
       write(chunk) { window.savedBytes.push(...chunk); }, close() { window.savedClosed = true; },
@@ -39,10 +51,22 @@ try {
     return response.status;
   });
   assert.equal(cancelledObjectStatus, 404);
+  const actionSection = page.locator('section').filter({ has: page.getByRole('heading', { name: 'Вложение через React 19 Action', exact: true }) });
+  await actionSection.locator('input[type=file]').setInputFiles({ name: 'action.bin', mimeType: 'application/octet-stream', buffer: payload });
+  await actionSection.getByRole('button', { name: 'Отправить вложение', exact: true }).click();
+  await page.waitForFunction(() => window.actionServerResponded === true);
+  assert.equal(await actionSection.getByRole('button', { name: 'Отправить вложение', exact: true }).isDisabled(), true);
+  assert.equal(await actionSection.locator('[data-transfer-status]').getAttribute('data-transfer-status'), 'transferring');
+  assert.equal(await actionSection.getByText(`Сохранено ${payload.length} байт`, { exact: true }).count(), 0);
+  await page.evaluate(() => window.releaseActionResponse());
+  await actionSection.getByText(`Сохранено ${payload.length} байт`, { exact: true }).waitFor();
+  assert.equal(await actionSection.getByRole('button', { name: 'Отправить вложение', exact: true }).isEnabled(), true);
+  assert.equal(await actionSection.locator('input[type=file]').inputValue(), '');
   assert.deepEqual(errors, []);
   await page.screenshot({ path: resolve(output, 'attachments.png'), fullPage: true });
   const result = { transport: 'Chromium HTTPS/HTTP2 -> Spring Boot 4.1.2 test fixture',
     bytes: payload.length, uploadCommit: true, streamedDownloadEqual: true, picker: 'test-only writable sink',
+    react19Action: 'native form submit, pending until observed commit, automatic field reset',
     storage: 'bounded in-memory ObjectStreams fixture; NOT S3',
     cancellation: 'ABORTED with unknown outcome before EOF; fixture GET returned 404', errors };
   await writeFile(resolve(output, 'result.json'), JSON.stringify(result, null, 2) + '\n');

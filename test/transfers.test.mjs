@@ -124,3 +124,61 @@ test('retained upload callbacks reject old scopes and file selection resets with
     assert.equal(element.querySelector('button').disabled, true);
   } finally { await act(async () => root.unmount()); element.remove(); }
 });
+
+// Actions must keep the same explicit commit and uncertain-error contract as hooks.
+// Actions сохраняют тот же контракт подтверждения и неизвестной ошибки, что и hooks.
+test('React 19 Action waits for commit, reports validation and unknown errors, and cancels queued work', async () => {
+  const { useFileUploadAction } = await import('../dist/react19.js');
+  const response = deferred(), consumed = deferred(); let requests = 0;
+  const fetch = async (_url, init) => {
+    requests++;
+    if (requests === 1) {
+      const reader = init.body.getReader(); while (!(await reader.read()).done) {}
+      consumed.resolve(); return response.promise;
+    }
+    return new Promise((_resolve, reject) => init.signal.addEventListener('abort', () => reject(init.signal.reason), { once: true }));
+  };
+  const app = await mount(useFileUploadAction, { ...config, objectKey: 'a', fetch });
+  const data = () => { const form = new FormData(); form.set('file', new File(['hello'], 'hello.txt')); return form; };
+  try {
+    await act(async () => { React.startTransition(() => app.current.formAction(data())); await consumed.promise; });
+    assert.equal(app.current.isPending, true); assert.equal(app.current.result.status, 'idle');
+    assert.equal(app.current.state.status, 'transferring'); assert.equal(app.current.state.bytes, 5);
+    await act(async () => { response.resolve(Response.json({ committed: true, key: 'a', bytes: 5, etag: 'v1' }, { status: 201 })); });
+    assert.equal(app.current.result.status, 'committed'); assert.equal(app.current.isPending, false);
+    await act(async () => { React.startTransition(() => app.current.formAction(new FormData())); });
+    assert.equal(app.current.result.status, 'failed'); assert.ok(app.current.result.error instanceof TypeError);
+    assert.equal(requests, 1);
+    await act(async () => { React.startTransition(() => { app.current.formAction(data()); app.current.formAction(data()); }); });
+    assert.equal(requests, 2);
+    await act(async () => app.current.cancel());
+    assert.equal(requests, 2); assert.equal(app.current.isPending, false);
+    assert.equal(app.current.result.status, 'failed');
+    assert.equal(app.current.result.error.uploadOutcome, 'unknown');
+    assert.equal(app.current.result.error.code, 'ABORTED');
+  } finally { await app.close(); }
+});
+
+test('React 19 queued and retained Actions cannot escape account scope or unmount', async () => {
+  const { useFileUploadAction } = await import('../dist/react19.js');
+  let requests = 0;
+  const fetch = async (_url, init) => {
+    requests++;
+    return new Promise((_resolve, reject) => init.signal.addEventListener('abort', () => reject(init.signal.reason), { once: true }));
+  };
+  const options = { ...config, objectKey: 'a', fetch };
+  const data = () => { const form = new FormData(); form.set('file', new File(['hello'], 'hello.txt')); return form; };
+  const app = await mount(useFileUploadAction, options);
+  const oldAction = app.current.formAction;
+  await act(async () => { React.startTransition(() => { oldAction(data()); oldAction(data()); }); });
+  assert.equal(requests, 1);
+  await app.render({ ...options, scope: 'bob' });
+  assert.equal(app.current.state.status, 'idle'); assert.equal(app.current.result.status, 'idle');
+  await act(async () => { React.startTransition(() => oldAction(data())); });
+  assert.equal(requests, 1);
+  await act(async () => { React.startTransition(() => { app.current.formAction(data()); app.current.formAction(data()); }); });
+  assert.equal(requests, 2);
+  await app.close();
+  await act(async () => { React.startTransition(() => oldAction(data())); });
+  assert.equal(requests, 2);
+});

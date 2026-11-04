@@ -3,7 +3,7 @@
 <details name="readme-language">
 <summary><picture><source media="(prefers-color-scheme: dark)" srcset="assets/lang-en-dark.svg"><img src="assets/lang-en-light.svg" width="42" height="26" alt="EN"></picture></summary>
 
-[0.1.0 guide](docs/0.1.0/en.md) · [Versions](docs/index.md) · [MIT](LICENSE)
+[0.1.0 guide](docs/0.1.0/en.md) · [API reference](docs/0.1.0/reference.en.md) · [Versions](docs/index.md) · [MIT](LICENSE)
 
 React components and hooks for continuous file uploads and downloads. Add an attachment to a form with progress, cancellation and a confirmed storage result; connect the same endpoint to the [Spring Boot starter](https://github.com/59Alex/file-streams-spring-boot-starter).
 
@@ -19,6 +19,7 @@ import { FileUpload } from '@59alex/file-streams-react';
 
 | Capability | Practical example |
 | --- | --- |
+| React 19 form Actions (optional entry) | [Form integration](examples/attachments/ActionAttachment.tsx) |
 | File input, progress and validated commit | [Ticket attachment](examples/attachments/Attachments.tsx) |
 | Streaming download to an application-owned sink | [Save the attachment](docs/0.1.0/en.md#2-download-directly-to-a-destination) |
 | Unknown-length generated content | [CSV report](examples/attachments/GeneratedReport.tsx) |
@@ -36,7 +37,7 @@ npm run typecheck
 npm run test:package
 ```
 
-This builds from source; registry publication is separate. [Run React and Spring together](docs/0.1.0/en.md#6-run-the-paired-example). The package reuses `@59alex/file-streams`; it adds no second upload protocol, chunk scheduler or whole-file buffer. React 18.3+/19 peers are supported by the API; local verification used React 19.
+This builds from source; registry publication is separate. [Run React and Spring together](docs/0.1.0/en.md#6-run-the-paired-example). The package reuses `@59alex/file-streams`; it adds no second upload protocol, chunk scheduler or whole-file buffer. The base entry works with React 18.3+/19; the optional `/react19` entry integrates native form Actions. Packed consumers were checked on React 18.3.1 and 19.3.1.
 
 Progress is not confirmation: a fully read source can still fail during storage commit. Failed/cancelled uploads may have an unknown result. One hook owns one active operation. Browser upload needs a working streaming transport, normally HTTP/2/TLS. Custom download destinations remain application-owned. [Verified scope and limits](docs/0.1.0/en.md#troubleshooting-and-verified-limits).
 
@@ -45,7 +46,7 @@ Progress is not confirmation: a fully read source can still fail during storage 
 <details name="readme-language" open>
 <summary><picture><source media="(prefers-color-scheme: dark)" srcset="assets/lang-ru-dark.svg"><img src="assets/lang-ru-light.svg" width="42" height="26" alt="RU"></picture></summary>
 
-[Руководство 0.1.0](docs/0.1.0/ru.md) · [Версии](docs/index.md) · [MIT](LICENSE)
+[Руководство 0.1.0](docs/0.1.0/ru.md) · [Справочник API](docs/0.1.0/reference.ru.md) · [Версии](docs/index.md) · [MIT](LICENSE)
 
 React-компоненты и hooks для непрерывной загрузки и скачивания файлов. Подключают вложение к форме вместе с прогрессом, отменой и подтверждённым результатом сохранения. На другой стороне того же endpoint работает [Spring Boot-стартер](https://github.com/59Alex/file-streams-spring-boot-starter).
 
@@ -61,6 +62,7 @@ import { FileUpload, russianLabels } from '@59alex/file-streams-react';
 
 | Возможность | Практический пример |
 | --- | --- |
+| Actions формы React 19 (отдельный entry) | [Интеграция формы](examples/attachments/ActionAttachment.tsx) |
 | Выбор файла, прогресс и проверенное подтверждение | [Вложение к заявке](examples/attachments/Attachments.tsx) |
 | Потоковое скачивание в назначение приложения | [Сохранение вложения](docs/0.1.0/ru.md#2-скачать-файл-прямо-в-назначение) |
 | Генерация данных неизвестной длины | [CSV-отчёт](examples/attachments/GeneratedReport.tsx) |
@@ -78,7 +80,7 @@ npm run typecheck
 npm run test:package
 ```
 
-Это сборка из исходников; публикация в реестре выполняется отдельно. [Запуск React вместе со Spring](docs/0.1.0/ru.md#6-запустить-парный-пример). Пакет переиспользует `@59alex/file-streams`: не добавляет второй протокол, планировщик частей или полный буфер файла. API допускает React 18.3+/19; локально проверен React 19.
+Это сборка из исходников; публикация в реестре выполняется отдельно. [Запуск React вместе со Spring](docs/0.1.0/ru.md#6-запустить-парный-пример). Пакет переиспользует `@59alex/file-streams`: не добавляет второй протокол, планировщик частей или полный буфер файла. Основной entry поддерживает React 18.3+/19; отдельный `/react19` подключает Actions формы. Упакованные потребители проверены на React 18.3.1 и 19.3.1.
 
 Прогресс не является подтверждением: после чтения всех байтов сохранение ещё может завершиться ошибкой. Результат отменённой/неуспешной загрузки может остаться неизвестным. Один hook владеет одной активной операцией. Браузерной загрузке нужен рабочий потоковый транспорт, обычно HTTP/2/TLS. Назначение скачивания предоставляет приложение. [Границы проверки](docs/0.1.0/ru.md#диагностика-и-границы-проверки).
 

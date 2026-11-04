@@ -22,6 +22,10 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
+    },
+    "./react19": {
+      "types": "./dist/react19.d.ts",
+      "import": "./dist/react19.js"
     }
   },
   "types": "./dist/index.d.ts",

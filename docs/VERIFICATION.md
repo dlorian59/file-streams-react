@@ -2,14 +2,15 @@
 
 [← README](../README.md) · [Versions / Версии](index.md)
 
-Local verification on 2026-11-04, Node 24.21.0, React 19.3.1, Chromium with the Spring Boot 4.1.2 HTTPS/HTTP2 example fixture.
+Local verification on 2026-11-05, Node 24.21.0, React 19.3.1, Chromium with the Spring Boot 4.1.2 HTTPS/HTTP2 example fixture on Java 25. Earlier fixture runs used Java 17.
 
 | Check | Result |
 | --- | --- |
-| `npm test` | Six focused cases: progress before commit, scope cancellation, late destination disposal, sink-close completion, SSR, stale callback/selection isolation. |
+| `npm test` | Eight focused cases: React 19 Action commit/error/queue cancellation and scope/unmount isolation, plus progress before commit, scope cancellation, late destination disposal, sink-close completion, SSR, stale callback/selection isolation. |
 | `npm run typecheck` | Strict TypeScript compiler checked the public implementation and all source examples. |
-| `npm run test:package` | Fresh consumer installed both packed artifacts, imported public exports, rendered SSR, checked declarations/semver peer and retained `use client` entry directive. |
+| `npm run test:package` | Fresh consumer installed both packed artifacts, imported public exports, rendered the base entry on React 18.3.1 and the optional Action entry on React 19.3.1, checked declarations/semver peer and both retained `use client` directives. |
 | `npm run test:browser` | Actual React component → HTTPS/HTTP2 → Java endpoint: 45 bytes uploaded with validated commit, downloaded into the supplied writable sink, exact bytes matched, no page errors. |
+| Native React 19 form | Real `<form action>` sent 45 bytes through Java. A test-only gate delayed observation of the real response: pending and transferring remained true, no saved result appeared before commit. After release, the file input reset and the confirmed result appeared. |
 | Known-length cancel | Paced 1 MiB source stopped before EOF. Client reported `ABORTED` / `unknown`; GET of the new key returned 404 in this fixture. |
 
 The browser test replaces the save picker with a test-only sink for byte comparison. It does not exercise an OS file dialog. The Java endpoint uses a bounded in-memory `ObjectStreams` fixture in a separate example source set. This checks component/protocol integration, **not S3 durability or multipart cleanup**. The core repository has separate storage evidence. Own demo/browser processes are stopped after verification.
@@ -26,6 +27,14 @@ If logical completeness is required for an unknown-length business object, appli
 
 Для подтверждения логической полноты объектов неизвестной длины приложению нужна проверка ожидаемого содержимого либо отдельная политика staging/finalization. React-адаптер не предоставляет распределённую транзакцию или гарантию удаления. Поведение этого fixture не является результатом проверки S3.
 
-Not exercised: React 18, Safari/Firefox uploads, real save picker, production authentication/proxy behavior, hostile custom streams, storage failover and interrupted networks. No universal performance claim is made.
+Not exercised: full React 18 browser interaction, Safari/Firefox uploads, real save picker, production authentication/proxy behavior, hostile custom streams, storage failover and interrupted networks. No universal performance claim is made.
 
 [← README](../README.md) · [Versions / Версии](index.md)
+
+## React 19 integration / Интеграция React 19
+
+The optional entry uses `useActionState`; the React 18 entry never imports it. Actions tests run under StrictMode. Cancellation invalidates existing queued work; scope changes and unmount prevent queued or retained Actions from starting another request. Original `TransferError` and `uploadOutcome: unknown` remain observable.
+
+Дополнительный entry использует `useActionState`, основной React 18 его не импортирует. Тесты Actions работают в StrictMode: отмена делает очередь недействительной, смена scope и unmount не дают старым Actions запустить новый запрос. Исходный `TransferError` и неизвестный результат сохраняются. В настоящем браузере проверена нативная форма с ожиданием commit и очисткой поля. Это тот же bounded memory fixture, не проверка S3.
+
+[EN reference](0.1.0/reference.en.md) · [Справочник RU](0.1.0/reference.ru.md) · [← README](../README.md)

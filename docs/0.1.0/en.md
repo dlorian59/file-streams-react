@@ -1,6 +1,6 @@
 # File streams React 0.1.0 — an attachment from screen to storage
 
-[← Versions](../index.md) · [README](../../README.md) · [Русский](ru.md)
+[← Versions](../index.md) · [API](reference.en.md) · [README](../../README.md) · [Русский](ru.md)
 
 A support ticket needs an attachment. The UI must report progress, stop work when the user leaves, show whether storage actually confirmed the upload, and download the file without building a second full copy in browser memory. These are separate responsibilities from the ticket form itself.
 
@@ -124,6 +124,12 @@ To use real S3-compatible storage, follow the starter's [storage setup](https://
 
 With both servers running, `npm run test:browser` checks actual Chromium → Spring HTTP/2 PUT/GET byte equality. Its save picker is a test-only writable sink, not an automated OS dialog.
 
+## 7. Integrate a React 19 form
+
+Use the optional `@59alex/file-streams-react/react19` entry when an existing form already uses Actions. [ActionAttachment.tsx](../../examples/attachments/ActionAttachment.tsx) connects its named file input to the same Java PUT endpoint. It supplies pending state, streaming progress, cancellation and a validated result without a second submit handler. The base entry stays compatible with React 18.
+
+Read the [complete Action contract](reference.en.md#react-19-form-actions), including the queue, file reset after an attempt, synchronous scope changes and uncertain outcomes. This is a client Action, not a Server Function; there is no optimistic saved state.
+
 ## Troubleshooting and verified limits
 
 - `A transfer is already active`: wait for its promise to settle; use a separate hook for another file.
@@ -133,6 +139,6 @@ With both servers running, `npm run test:browser` checks actual Chromium → Spr
 - Upload outcome `unknown`: check storage/application state before deciding to create a new stream and retry.
 - Certificate/readiness failure: start the Spring example first and ensure both origins are configured.
 
-Verified locally: six focused lifecycle/transfer tests, strict example typecheck, clean packed-package consumer with SSR, and Chromium HTTP/2 upload/commit/download plus known-length cancellation through Spring Boot 4.1.2. [Detailed verification](../VERIFICATION.md). The paired run used the bounded in-memory fixture, **not S3**. React 18, Safari/Firefox uploads, real file-picker dialogs, interrupted networks and production proxies were not exercised. See the [core transport](https://github.com/59Alex/file-streams) for its separate storage evidence and reliability limits.
+Verified locally: eight focused lifecycle/transfer/Action tests, strict example typecheck, clean packed-package consumer with SSR, and Chromium HTTP/2 upload/commit/download plus known-length cancellation through Spring Boot 4.1.2. [Detailed verification](../VERIFICATION.md). The paired run used the bounded in-memory fixture, **not S3**. Safari/Firefox uploads, real file-picker dialogs, interrupted networks and production proxies were not exercised. See the [core transport](https://github.com/59Alex/file-streams) for its separate storage evidence and reliability limits.
 
-[← Versions](../index.md) · [README](../../README.md)
+[← Versions](../index.md) · [API](reference.en.md) · [README](../../README.md)
