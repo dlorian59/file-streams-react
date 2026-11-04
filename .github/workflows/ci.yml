@@ -1,0 +1,31 @@
+name: CI
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: file-streams-react
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: file-streams-react
+      - uses: actions/checkout@v4
+        with:
+          repository: 59Alex/file-streams
+          path: file-streams
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: file-streams-react/package-lock.json
+      - run: npm ci --ignore-scripts && npm run build
+        working-directory: file-streams/browser
+      - run: npm ci --ignore-scripts
+      - run: npm test
+      - run: npm run typecheck
+      - run: npm run test:package
