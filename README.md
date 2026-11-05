@@ -83,6 +83,8 @@ Import both names from `@59alex/file-streams-react`. [Every component in action]
 
 The adapter uses continuous raw streams. Bytes read are not a commit; completion requires the matching server result. The recording used actual Spring WebFlux and Garage's S3 API with capture-only pacing and an OPFS destination replacing the OS dialog. It is not a performance or storage-failover benchmark.
 
+[VideoAttachment](https://github.com/dlorian59/video-streams-react) extends FileAttachment with server preparation and a ready HLS player. It preloads the beginning, then loads segments as needed for playback and seeking. [Complete Spring/React example](https://github.com/dlorian59/video-streams-react/blob/main/docs/en/integration.md).
+
 </details>
 
 <details name="readme-language" open>
@@ -167,5 +169,7 @@ const upload = useFileUpload({ objectsUrl, scope: accountId,
 [Интеграция Spring/React](docs/integration/ru.md) · [Визуальные примеры](docs/visuals/ru.md) · [Подробное руководство](docs/0.1.0/ru.md) · [API](docs/0.1.0/reference.ru.md) · [Версии](docs/index.md) · [Проверки](docs/VERIFICATION.md) · [Разработка](CONTRIBUTING.md) · [MIT](LICENSE)
 
 Адаптер передаёт непрерывные raw-потоки. Прочитанные байты не равны commit; завершению нужен соответствующий результат сервера. Запись использовала настоящие Spring WebFlux и Garage S3 API с задержкой только для читаемости и OPFS вместо системного диалога. Это не измерение производительности или отказоустойчивости хранилища.
+
+[VideoAttachment](https://github.com/dlorian59/video-streams-react) дополняет FileAttachment подготовкой на сервере и готовым HLS-плеером. Он заранее загружает начало, затем получает сегменты по мере просмотра и перемотки. [Полный пример Spring/React](https://github.com/dlorian59/video-streams-react/blob/main/docs/ru/integration.md).
 
 </details>
