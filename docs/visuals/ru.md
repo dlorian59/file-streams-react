@@ -2,10 +2,11 @@
 
 [← README](../../README.md) · [Руководство 0.1.0](../0.1.0/ru.md) · [Справочник API](../0.1.0/reference.ru.md) · [English](en.md)
 
-В записях настоящие React-компоненты выполняют HTTP/2-запросы к локальному **Node fixture с ограниченным хранилищем в памяти**. Это не Spring и не S3. Искусственные задержки источника/транспорта делают состояния различимыми; записи не измеряют производительность. Recorder не рисует прогресс или результат commit. Небольшой курсор отмечает реальные автоматизированные нажатия; системный диалог выбора не записан, но выбранное имя файла видно. Подписи native file input определяет браузер.
+Запись готового `FileAttachment` использует настоящие **Spring WebFlux + Garage S3**. Четыре независимых сценария компонентов/hooks выполняют HTTP/2-запросы к локальному **Node fixture с ограниченным хранилищем в памяти**, не к Spring/S3. Искусственные задержки источника/транспорта делают состояния различимыми; записи не измеряют производительность. Recorder не рисует прогресс или результат commit. Небольшой курсор отмечает реальные автоматизированные нажатия; системный диалог выбора не записан, но выбранное имя файла видно. Подписи native file input определяет браузер.
 
 | API | Сценарий | На что смотреть |
 | --- | --- | --- |
+| [FileAttachment](#fileattachment) | Готовая загрузка/скачивание | [Spring + React](../integration/ru.md) |
 | [FileUpload](#fileupload) | Выбор → загрузка → подтверждение | Счётчик чтения 100% ещё предшествует commit |
 | [FileDownload](#filedownload) | Скачивание подтверждённого объекта | Backpressure, прогресс байтов, закрытие назначения |
 | [TransferStatus](#transferstatus) | Отмена → неизвестный результат → проверка → повтор | Ошибка видна; отмена не обещает откат |
@@ -28,6 +29,24 @@ npm run demo:visuals
 Откройте `https://127.0.0.1:5181/?scenario=components&lang=ru` и примите локальный сертификат разработки. Fixture работает по HTTPS/HTTP2 на `127.0.0.1:19444`; при необходимости откройте и этот origin один раз, чтобы принять его сертификат. Окна браузера автоматически не открываются. Сценарии: `components`, `upload`, `download`, `action`; `lang=en` включает английский. Ctrl+C останавливает оба сервера и удаляет объекты fixture. Для повторной демонстрации отмены/проверки/повтора может потребоваться перезапуск, чтобы убрать объект, сохранённый предыдущим запуском.
 
 Для настоящей интеграции Java используйте [парную настройку Spring](../0.1.0/ru.md#1-загрузить-вложение-из-react-и-принять-его-в-java). Замените URL fixture авторизованным endpoint и уберите `fetch` с задержкой для записи. Передавайте синхронно меняющийся `scope` аккаунта. Примеры не предоставляют production-авторизацию, политику перезаписи или API сверки состояния хранилища.
+
+## FileAttachment
+
+[Готовый FileAttachment: полная интеграция Spring/React](../integration/ru.md). Готовый компонент объединяет загрузку/скачивание с default-профилем attachments и необязательными стилями. Эта запись использовала настоящие Spring WebFlux + Garage S3, в отличие от независимых memory fixtures ниже.
+
+```tsx
+import { FileAttachment } from '@59alex/file-streams-react';
+import '@59alex/file-streams-react/styles.css';
+
+export function Attachment() {
+  return <FileAttachment objectsUrl="/attachments" scope="account-42"
+    objectKey="account-42:invoice.pdf" language="ru" />;
+}
+```
+
+<picture><source media="(prefers-reduced-motion: reduce)" srcset="../../assets/visuals/attachment-spring-ru.png"><img src="../../assets/visuals/attachment-spring-ru.gif" width="800" alt="Готовое вложение загружается через Spring и скачивается после подтверждения"></picture>
+
+[Статичный кадр](../../assets/visuals/attachment-spring-ru.png) · [Запускаемый исходник](../../examples/spring-react/TicketAttachment.tsx)
 
 ## FileUpload
 

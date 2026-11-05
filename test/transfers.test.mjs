@@ -182,3 +182,43 @@ test('React 19 queued and retained Actions cannot escape account scope or unmoun
   await act(async () => { React.startTransition(() => oldAction(data())); });
   assert.equal(requests, 2);
 });
+
+test('ready attachment blocks uncertain retries until application reconciliation and clears on account switch', async () => {
+  const { FileAttachment } = await import('../dist/index.js');
+  const element = document.createElement('div'); document.body.append(element);
+  const root = createRoot(element); let requests = 0, commits = 0;
+  const checked = deferred();
+  const fetch = async (_url, init) => {
+    requests++;
+    if (requests === 1) return new Promise((_resolve, reject) => init.signal.addEventListener('abort', () => reject(init.signal.reason), { once: true }));
+    const reader = init.body.getReader(); let bytes = 0;
+    for (;;) { const next = await reader.read(); if (next.done) break; bytes += next.value.length; }
+    return Response.json({ committed: true, key: 'attachment', bytes, etag: 'v2' }, { status: 201 });
+  };
+  const props = { objectsUrl: config.objectsUrl, scope: 'alice', objectKey: 'attachment', fetch,
+    destination: () => Promise.resolve(new WritableStream()), reconcileUpload: () => checked.promise, onCommitted: () => commits++ };
+  const button = label => [...element.querySelectorAll('button')].find(node => node.textContent === label);
+  try {
+    await act(async () => root.render(React.createElement(StrictMode, null, React.createElement(FileAttachment, props))));
+    const input = element.querySelector('input');
+    Object.defineProperty(input, 'files', { configurable: true, value: [new File(['hello'], 'hello.txt')] });
+    await act(async () => input.dispatchEvent(new dom.window.Event('change', { bubbles: true })));
+    assert.equal(button('Download').disabled, true);
+    await act(async () => button('Upload').click());
+    await act(async () => button('Cancel').click());
+    assert.equal(requests, 1); assert.equal(button('Retry upload').disabled, true); assert.equal(input.disabled, true);
+    assert.match(element.textContent, /server may have saved/);
+    await act(async () => button('Check upload result').click());
+    assert.equal(button('Retry upload').disabled, true);
+    await act(async () => checked.resolve('absent'));
+    assert.equal(button('Retry upload').disabled, false);
+    await act(async () => button('Retry upload').click());
+    assert.equal(requests, 2); assert.equal(commits, 1); assert.equal(button('Download').disabled, false);
+    await act(async () => root.render(React.createElement(FileAttachment, { ...props, scope: 'bob' })));
+    assert.equal(button('Download').disabled, true); assert.equal(button('Upload').disabled, true);
+    assert.notEqual(element.querySelector('input'), input); assert.equal(commits, 1);
+    await act(async () => root.render(React.createElement(FileAttachment, { ...props, scope: 'bob',
+      existingFile: { committed: true, key: 'attachment', bytes: 5, etag: 'persisted' } })));
+    assert.equal(button('Download').disabled, false); assert.equal(commits, 1);
+  } finally { await act(async () => root.unmount()); element.remove(); }
+});

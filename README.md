@@ -3,97 +3,169 @@
 <details name="readme-language">
 <summary><picture><source media="(prefers-color-scheme: dark)" srcset="assets/lang-en-dark.svg"><img src="assets/lang-en-light.svg" width="42" height="26" alt="EN"></picture></summary>
 
-[0.1.0 guide](docs/0.1.0/en.md) · [API reference](docs/0.1.0/reference.en.md) · [Versions](docs/index.md) · [MIT](LICENSE) · [Visual component guide](docs/visuals/en.md)
+Add an attachment control to an existing React screen: select a file, upload, cancel, and download confirmed content. `FileAttachment` includes the controls and feedback; your application supplies the account and object identity. Smaller components and hooks remain available for custom screens.
 
-React components and hooks for continuous file uploads and downloads. Add an attachment to a form with progress, cancellation and a confirmed storage result; connect the same endpoint to the [Spring Boot starter](https://github.com/dlorian59/file-streams-spring-boot-starter).
+## Get started
 
-<picture><source media="(prefers-reduced-motion: reduce)" srcset="assets/visuals/components-en.png"><img src="assets/visuals/components-en.gif" width="800" alt="Real file selection, upload confirmation and streaming download in React"></picture>
+Add these entries to your existing `package.json` dependencies. Keep your matching React/React DOM 18.3.1 or 19 versions.
 
-[Static image](assets/visuals/components-en.png) · [Visual component guide: FileUpload, FileDownload, TransferStatus + hooks](docs/visuals/en.md)
+```json
+{
+  "dependencies": {
+    "@59alex/file-streams": "0.1.0",
+    "@59alex/file-streams-react": "0.1.0"
+  }
+}
+```
 
-Local paced HTTP/2 memory fixture, not S3. Read progress and storage confirmation are separate states.
+These packages are not yet published to npm; [local artifact setup](CONTRIBUTING.md) is available now. The coordinates above describe the intended package dependencies, not a verified registry release.
 
 ```tsx
-import { FileUpload } from '@59alex/file-streams-react';
+import { FileAttachment } from '@59alex/file-streams-react';
+import '@59alex/file-streams-react/styles.css';
 
-<FileUpload objectsUrl="https://files.example.com/objects"
-  scope="account-42" objectKey="tickets/123/attachment.bin"
-  maxBytes={8 * 1024 * 1024} onCommitted={setSaved} />
+export function TicketFiles({ accountId, ticketId }: {
+  accountId: string; ticketId: string;
+}) {
+  return <FileAttachment scope={accountId} objectsUrl="/attachments"
+    objectKey={`${accountId}:ticket-${ticketId}.txt`} />;
+}
 ```
 
-`setSaved` is your application callback. The complete [attachment example](examples/attachments/Attachments.tsx) provides it and pairs upload with download. The [guide](docs/0.1.0/en.md#1-upload-an-attachment-and-receive-it-in-java) shows the Java configuration and the matching request/response.
+This example uses your same-origin `/attachments` business endpoint and the `attachments` size profile (64 MiB). Upload and download share one key. Configure the [Spring starter](https://github.com/dlorian59/file-streams-spring-boot-starter) for the same profile, or supply `objectsUrl` for another origin. The backend authorizes the key; the example's colon delimiter works with the default Spring Security firewall.
 
-| Capability | Practical example |
-| --- | --- |
-| React 19 form Actions (optional entry) | [Form integration](examples/attachments/ActionAttachment.tsx) |
-| File input, progress and validated commit | [Ticket attachment](examples/attachments/Attachments.tsx) |
-| Streaming download to an application-owned sink | [Save the attachment](docs/0.1.0/en.md#2-download-directly-to-a-destination) |
-| Unknown-length generated content | [CSV report](examples/attachments/GeneratedReport.tsx) |
-| Cancellation and explicit uncertain outcomes | [Cancelable import](examples/attachments/CancelableImport.tsx) |
-| Byte-range preview | [First 4 KiB](examples/attachments/PartialPreview.tsx) |
-| Custom UI, labels, scope changes and SSR | [Hooks and ownership](docs/0.1.0/en.md#5-customize-ui-and-account-ownership) |
+Download uses a native streaming save picker when supported. You can supply your own `destination`; unsupported browsers show an explanation rather than buffering a whole file. [Complete Spring/React integration](docs/integration/en.md) includes dependencies, configuration, file structure and runnable source.
 
-With `file-streams` checked out next to this repository, Node 22.12+:
+<picture><source media="(prefers-reduced-motion: reduce)" srcset="assets/visuals/attachment-spring-en.png"><img src="assets/visuals/attachment-spring-en.gif" width="800" alt="Ready attachment component: select a file, upload through Spring to Garage S3, then download after confirmation"></picture>
 
-```bash
-(cd ../file-streams/browser && npm ci && npm run build)
-npm ci
-npm test
-npm run typecheck
-npm run test:package
+[Static image](assets/visuals/attachment-spring-en.png) · [Source](examples/spring-react/TicketAttachment.tsx) · [Recording details](docs/integration/en.md#run-and-record)
+
+## Capabilities
+
+**Show an already saved attachment.** Pass metadata from your application; a new upload is not required to enable download.
+
+```tsx
+<FileAttachment scope={accountId} objectsUrl="/attachments" objectKey={attachment.key}
+  existingFile={attachment} />
 ```
 
-This builds from source; registry publication is separate. [Run React and Spring together](docs/0.1.0/en.md#6-run-the-paired-example). The package reuses `@59alex/file-streams`; it adds no second upload protocol, chunk scheduler or whole-file buffer. The base entry works with React 18.3+/19; the optional `/react19` entry integrates native form Actions. Packed consumers were checked on React 18.3.1 and 19.3.1.
+`attachment` is an `UploadCommit` previously saved by the application. Mounting it does not call `onCommitted`. [Full example](examples/spring-react/TicketAttachment.tsx) · [Existing files](docs/integration/en.md#existing-files).
 
-Progress is not confirmation: a fully read source can still fail during storage commit. Failed/cancelled uploads may have an unknown result. One hook owns one active operation. Browser upload needs a working streaming transport, normally HTTP/2/TLS. Custom download destinations remain application-owned. [Verified scope and limits](docs/0.1.0/en.md#troubleshooting-and-verified-limits).
+**Choose a size policy by name.** Keep large media transfers on their own policy without byte arithmetic.
+
+```tsx
+<FileAttachment scope={accountId} objectsUrl="/attachments" objectKey={fileKey} profile="media" />
+```
+
+Profiles: `attachments` 64 MiB, `media` 512 MiB, `archives` 16 GiB. Match the server's policy; `maxBytes` is an explicit override. [Options](docs/0.1.0/reference.en.md#ready-attachment-control).
+
+**Handle an uncertain result explicitly.** Supply your application's reconciliation function when it can establish the final object outcome.
+
+```tsx
+<FileAttachment scope={accountId} objectsUrl="/attachments" objectKey={fileKey}
+  reconcileUpload={checkFinalUploadOutcome} />
+```
+
+Cancel/lost response can leave an uploaded object. The control blocks another upload until reconciliation returns `absent`; `present` or `unknown` keeps it blocked. It never retries automatically. A single early 404 is not proof that an older request cannot still commit. [Callback contract and source](docs/integration/en.md#cancellation-and-retry).
+
+**Keep your existing form and design system.** Use `FileUpload`, `FileDownload`, `TransferStatus`, or hooks. The optional `/react19` entry adds native form Actions.
+
+```tsx
+const upload = useFileUpload({ objectsUrl, scope: accountId,
+  maxBytes: fileProfiles.attachments.maxBytes });
+```
+
+Import both names from `@59alex/file-streams-react`. [Every component in action](docs/visuals/en.md) · [React 19 source](examples/visuals/ActionForm.tsx) · [API reference](docs/0.1.0/reference.en.md).
+
+## Guides
+
+[Spring/React integration](docs/integration/en.md) · [Visual examples](docs/visuals/en.md) · [Detailed guide](docs/0.1.0/en.md) · [API](docs/0.1.0/reference.en.md) · [Versions](docs/index.md) · [Verification](docs/VERIFICATION.md) · [Development](CONTRIBUTING.md) · [MIT](LICENSE)
+
+The adapter uses continuous raw streams. Bytes read are not a commit; completion requires the matching server result. The recording used actual Spring WebFlux and Garage's S3 API with capture-only pacing and an OPFS destination replacing the OS dialog. It is not a performance or storage-failover benchmark.
 
 </details>
 
 <details name="readme-language" open>
 <summary><picture><source media="(prefers-color-scheme: dark)" srcset="assets/lang-ru-dark.svg"><img src="assets/lang-ru-light.svg" width="42" height="26" alt="RU"></picture></summary>
 
-[Руководство 0.1.0](docs/0.1.0/ru.md) · [Справочник API](docs/0.1.0/reference.ru.md) · [Версии](docs/index.md) · [MIT](LICENSE) · [Визуальное руководство](docs/visuals/ru.md)
+Добавляет поле вложения на существующий React-экран: выбор файла, загрузку, отмену и скачивание подтверждённого содержимого. `FileAttachment` включает кнопки и обратную связь; приложение задаёт аккаунт и ключ объекта. Отдельные компоненты и hooks остаются доступными для своего интерфейса.
 
-React-компоненты и hooks для непрерывной загрузки и скачивания файлов. Подключают вложение к форме вместе с прогрессом, отменой и подтверждённым результатом сохранения. На другой стороне того же endpoint работает [Spring Boot-стартер](https://github.com/dlorian59/file-streams-spring-boot-starter).
+## Начало работы
 
-<picture><source media="(prefers-reduced-motion: reduce)" srcset="assets/visuals/components-ru.png"><img src="assets/visuals/components-ru.gif" width="800" alt="Реальный выбор файла, подтверждение загрузки и потоковое скачивание в React"></picture>
+Добавьте эти записи в dependencies существующего `package.json`. Сохраните используемые согласованные версии React/React DOM 18.3.1 или 19.
 
-[Статичный кадр](assets/visuals/components-ru.png) · [Визуальное руководство: FileUpload, FileDownload, TransferStatus + hooks](docs/visuals/ru.md)
+```json
+{
+  "dependencies": {
+    "@59alex/file-streams": "0.1.0",
+    "@59alex/file-streams-react": "0.1.0"
+  }
+}
+```
 
-Локальный HTTP/2 memory fixture с задержкой, не S3. Прогресс чтения и подтверждение сохранения — разные состояния.
+Пакеты ещё не опубликованы в npm; сейчас доступно [подключение локальных артефактов](CONTRIBUTING.md). Координаты выше описывают зависимости пакетов, а не проверенный релиз в реестре.
 
 ```tsx
-import { FileUpload, russianLabels } from '@59alex/file-streams-react';
+import { FileAttachment } from '@59alex/file-streams-react';
+import '@59alex/file-streams-react/styles.css';
 
-<FileUpload objectsUrl="https://files.example.com/objects"
-  scope="account-42" objectKey="tickets/123/attachment.bin"
-  maxBytes={8 * 1024 * 1024} onCommitted={setSaved} labels={russianLabels} />
+export function TicketFiles({ accountId, ticketId }: {
+  accountId: string; ticketId: string;
+}) {
+  return <FileAttachment scope={accountId} objectsUrl="/attachments" language="ru"
+    objectKey={`${accountId}:ticket-${ticketId}.txt`} />;
+}
 ```
 
-`setSaved` — callback приложения. Полный [пример вложения](examples/attachments/Attachments.tsx) содержит его реализацию и скачивание. В [руководстве](docs/0.1.0/ru.md#1-загрузить-вложение-из-react-и-принять-его-в-java) рядом показаны Java-конфигурация и соответствующие запрос/ответ.
+Пример использует бизнес-endpoint `/attachments` того же origin и профиль размера `attachments` (64 МиБ). Загрузка и скачивание работают с одним ключом. Задайте тот же профиль в [Spring-стартере](https://github.com/dlorian59/file-streams-spring-boot-starter) либо передайте `objectsUrl` для другого origin. Сервер проверяет доступ к ключу; разделитель-двоеточие из примера совместим со стандартным Spring Security firewall.
 
-| Возможность | Практический пример |
-| --- | --- |
-| Actions формы React 19 (отдельный entry) | [Интеграция формы](examples/attachments/ActionAttachment.tsx) |
-| Выбор файла, прогресс и проверенное подтверждение | [Вложение к заявке](examples/attachments/Attachments.tsx) |
-| Потоковое скачивание в назначение приложения | [Сохранение вложения](docs/0.1.0/ru.md#2-скачать-файл-прямо-в-назначение) |
-| Генерация данных неизвестной длины | [CSV-отчёт](examples/attachments/GeneratedReport.tsx) |
-| Отмена и явный неизвестный результат | [Отмена импорта](examples/attachments/CancelableImport.tsx) |
-| Предпросмотр диапазона | [Первые 4 КиБ](examples/attachments/PartialPreview.tsx) |
-| Свой UI, перевод, смена аккаунта и SSR | [Hooks и владение](docs/0.1.0/ru.md#5-подключить-свой-интерфейс-и-смену-аккаунта) |
+Для скачивания используется нативный потоковый save picker, когда он поддерживается. Можно передать своё `destination`; неподдерживаемый браузер показывает объяснение, не собирая полный файл в памяти. [Полная интеграция Spring/React](docs/integration/ru.md) содержит зависимости, конфигурацию, структуру файлов и запускаемый исходник.
 
-При соседнем checkout `file-streams` и Node 22.12+:
+<picture><source media="(prefers-reduced-motion: reduce)" srcset="assets/visuals/attachment-spring-ru.png"><img src="assets/visuals/attachment-spring-ru.gif" width="800" alt="Готовое вложение: выбрать файл, загрузить через Spring в Garage S3 и скачать после подтверждения"></picture>
 
-```bash
-(cd ../file-streams/browser && npm ci && npm run build)
-npm ci
-npm test
-npm run typecheck
-npm run test:package
+[Статичный кадр](assets/visuals/attachment-spring-ru.png) · [Исходник](examples/spring-react/TicketAttachment.tsx) · [Условия записи](docs/integration/ru.md#запуск-и-запись)
+
+## Возможности
+
+**Показать сохранённое вложение.** Передайте метаданные из приложения; для скачивания не требуется новая загрузка.
+
+```tsx
+<FileAttachment scope={accountId} objectsUrl="/attachments" objectKey={attachment.key}
+  existingFile={attachment} language="ru" />
 ```
 
-Это сборка из исходников; публикация в реестре выполняется отдельно. [Запуск React вместе со Spring](docs/0.1.0/ru.md#6-запустить-парный-пример). Пакет переиспользует `@59alex/file-streams`: не добавляет второй протокол, планировщик частей или полный буфер файла. Основной entry поддерживает React 18.3+/19; отдельный `/react19` подключает Actions формы. Упакованные потребители проверены на React 18.3.1 и 19.3.1.
+`attachment` — ранее сохранённый приложением `UploadCommit`. Его отображение не вызывает `onCommitted`. [Полный пример](examples/spring-react/TicketAttachment.tsx) · [Существующие файлы](docs/integration/ru.md#существующие-файлы).
 
-Прогресс не является подтверждением: после чтения всех байтов сохранение ещё может завершиться ошибкой. Результат отменённой/неуспешной загрузки может остаться неизвестным. Один hook владеет одной активной операцией. Браузерной загрузке нужен рабочий потоковый транспорт, обычно HTTP/2/TLS. Назначение скачивания предоставляет приложение. [Границы проверки](docs/0.1.0/ru.md#диагностика-и-границы-проверки).
+**Выбрать политику размера по имени.** Отделите крупные медиафайлы своей политикой без арифметики байтов.
+
+```tsx
+<FileAttachment scope={accountId} objectsUrl="/attachments" objectKey={fileKey} profile="media" />
+```
+
+Профили: `attachments` 64 МиБ, `media` 512 МиБ, `archives` 16 ГиБ. Согласуйте политику с сервером; `maxBytes` явно переопределяет лимит. [Параметры](docs/0.1.0/reference.ru.md#готовый-компонент-вложения).
+
+**Явно обработать неизвестный результат.** Передайте функцию приложения, если оно может установить окончательный результат сохранения объекта.
+
+```tsx
+<FileAttachment scope={accountId} objectsUrl="/attachments" objectKey={fileKey}
+  reconcileUpload={checkFinalUploadOutcome} />
+```
+
+После отмены или потери ответа объект мог сохраниться. Новая загрузка заблокирована до результата сверки `absent`; `present` и `unknown` оставляют блокировку. Автоматических повторов нет. Один ранний 404 не доказывает, что старый запрос уже не сможет завершиться commit. [Контракт callback и исходник](docs/integration/ru.md#отмена-и-повтор).
+
+**Сохранить свою форму и дизайн-систему.** Используйте `FileUpload`, `FileDownload`, `TransferStatus` или hooks. Отдельный entry `/react19` добавляет нативные Actions формы.
+
+```tsx
+const upload = useFileUpload({ objectsUrl, scope: accountId,
+  maxBytes: fileProfiles.attachments.maxBytes });
+```
+
+Оба имени импортируются из `@59alex/file-streams-react`. [Все компоненты в работе](docs/visuals/ru.md) · [Исходник React 19](examples/visuals/ActionForm.tsx) · [Справочник API](docs/0.1.0/reference.ru.md).
+
+## Руководства
+
+[Интеграция Spring/React](docs/integration/ru.md) · [Визуальные примеры](docs/visuals/ru.md) · [Подробное руководство](docs/0.1.0/ru.md) · [API](docs/0.1.0/reference.ru.md) · [Версии](docs/index.md) · [Проверки](docs/VERIFICATION.md) · [Разработка](CONTRIBUTING.md) · [MIT](LICENSE)
+
+Адаптер передаёт непрерывные raw-потоки. Прочитанные байты не равны commit; завершению нужен соответствующий результат сервера. Запись использовала настоящие Spring WebFlux и Garage S3 API с задержкой только для читаемости и OPFS вместо системного диалога. Это не измерение производительности или отказоустойчивости хранилища.
 
 </details>

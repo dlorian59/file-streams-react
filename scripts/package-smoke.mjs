@@ -9,6 +9,7 @@ try {
   const base = resolve(root, '../file-streams/browser');
   const basePack = JSON.parse(npm(['pack', '--json', '--pack-destination', temporary], base))[0];
   const ownPack = JSON.parse(npm(['pack', '--json', '--pack-destination', temporary]))[0];
+  if (!ownPack.files.some(f => f.path === 'dist/styles.css')) throw Error('Missing public stylesheet');
   if (!ownPack.files.some(f => f.path === 'dist/index.d.ts')) throw Error('Missing declarations');
   npm(['init', '-y'], temporary);
   npm(['install', '--ignore-scripts', '--no-audit', '--no-fund', join(temporary, basePack.filename),
@@ -20,9 +21,12 @@ try {
   execFileSync(process.execPath, ['--input-type=module', '-e', `
     import React from 'react';
     import { renderToString } from 'react-dom/server';
-    import { FileUpload } from '@59alex/file-streams-react';
+    import { FileUpload, FileAttachment, fileProfiles } from '@59alex/file-streams-react';
     const html = renderToString(React.createElement(FileUpload, { objectsUrl: 'https://example.invalid/objects', maxBytes: 100, objectKey: 'a' }));
     if (!html.includes('type="file"')) throw Error('Consumer render failed');
+    const attachment = renderToString(React.createElement(FileAttachment, { objectKey: 'ticket/1', scope: 'alice' }));
+    if (!attachment.includes('data-file-attachment') || !attachment.includes('Download')) throw Error('Ready component SSR failed');
+    if (!fileProfiles.attachments.maxBytes) throw Error('Missing profiles');
   `], { cwd: temporary, stdio: 'inherit' });
   console.log('Packed React 18.3.1 consumer: base imports and SSR passed');
   npm(['install', '--ignore-scripts', '--no-audit', '--no-fund', 'react@19.3.1', 'react-dom@19.3.1'], temporary);

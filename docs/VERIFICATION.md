@@ -57,3 +57,17 @@ All recordings had zero page errors and no horizontal overflow at 800px. Eight G
 `npm run typecheck` checked the examples; twelve complete TSX integration snippets extracted from the EN/RU guides also passed TypeScript compilation. All 220 local Markdown/image links and anchors passed a path check. `git diff --check` passed. Runtime library source/API is unchanged.
 
 Восемь записей проверяют настоящие действия и состояния UI на ограниченном Node fixture, а не надёжность S3 или Spring-интеграцию. Файловое назначение — настоящий OPFS; полное чтение маленького сохранённого файла используется только скриптом для сравнения байтов, не примером скачивания. Исходники записи и сервера находятся в `scripts/capture-visuals.mjs` и `scripts/visual-demo.mjs`; raw videos и `verification.json` остаются в игнорируемом `output/playwright/visuals/`.
+
+## Ready integration — OSS-013
+
+[Spring/React EN](integration/en.md) · [Spring/React RU](integration/ru.md)
+
+`FileAttachment` uses the existing transfer hooks and the core's named `fileProfiles`. Nine focused tests now include uncertain cancellation → blocked retry → application-confirmed absence → explicit fresh retry, account isolation and immediate download availability for existing metadata. `npm run typecheck` includes the full ready-component example and its public CSS import. Packed React 18.3.1 and React 19.3.1 consumers passed; the new stylesheet is present in the artifact.
+
+`npm run capture:attachment` recorded the real loopback chain **React → Spring WebFlux → Garage S3 API** in EN/RU. This is separate from the earlier Node and Spring memory fixtures. Each selected file contained 131072 bytes. The browser waited for commit before enabling download, saved through a real OPFS writable destination, and compared every byte. The default save-picker factory ran with `navigator.userActivation.isActive === true`; only the OS dialog was substituted. Both recordings had zero page errors. GIF sizes: 1341816 bytes EN, 1293233 bytes RU; PNG reduced-motion alternatives are supplied.
+
+The backend owner independently retrieved `demo-account:ticket-visual-en.txt` and `demo-account:ticket-visual-ru.txt` through signed direct S3 GET. Each object was 131072 bytes with SHA-256 `02c9a68f567b8ec215d893cde67ae2da41ba3c9b838d0ba4d3d04ab3cdc58da6`. This confirms these concrete Garage objects, not storage failover or durability under faults. The application-owner secured `/attachments` consumer was separately tested with real Spring Security/default firewall; the recorded `/objects` endpoint is an unauthenticated loopback demo and is labelled accordingly.
+
+The ready capture uses a delay on actual stream consumption for readability. It does not manufacture progress or successful responses. Frontend/browser processes were stopped by the recorder; the backend owner was notified to clean up its Boot/Garage processes. Raw videos and assertions are in ignored `output/playwright/attachment/verification.json`; the reproducible script is `scripts/capture-attachment.mjs`.
+
+Готовый компонент проверен не только через memory fixture: выполнена настоящая цепочка React → Spring WebFlux → Garage S3, а данные дополнительно сверены прямым S3 GET. Проверка сохранённого вложения через `existingFile` не вызывает `onCommitted`; unknown-повтор остаётся закрытым до достоверного решения приложения. Публикация в npm/Central и проверки отказоустойчивости в эти результаты не входят.

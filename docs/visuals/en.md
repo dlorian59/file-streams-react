@@ -2,10 +2,11 @@
 
 [← README](../../README.md) · [0.1.0 guide](../0.1.0/en.md) · [API reference](../0.1.0/reference.en.md) · [Русский](ru.md)
 
-These recordings show real React components making HTTP/2 requests to a local **bounded Node memory fixture**. This fixture is not Spring or S3. Artificial source/transport delays make the states readable; the recordings are not performance measurements. No progress or commit result is drawn by the recorder. A small cursor marks real automated mouse actions; the native file chooser is not recorded, but the selected filename is visible.
+The ready `FileAttachment` recording uses actual **Spring WebFlux + Garage S3**. The four independent component/hook recordings use a local **bounded Node memory fixture**, not Spring or S3. Artificial source/transport delays make the states readable; the recordings are not performance measurements. No progress or commit result is drawn by the recorder. A small cursor marks real automated mouse actions; the native file chooser is not recorded, but the selected filename is visible.
 
 | API | Scenario | What to look for |
 | --- | --- | --- |
+| [FileAttachment](#fileattachment) | Ready upload/download control | [Spring + React](../integration/en.md) |
 | [FileUpload](#fileupload) | Select → upload → confirmation | A read counter at 100% still precedes commit |
 | [FileDownload](#filedownload) | Download the confirmed object | Backpressure, byte progress, destination close |
 | [TransferStatus](#transferstatus) | Cancel → uncertain result → check → retry | Failure is visible; cancellation does not promise rollback |
@@ -28,6 +29,24 @@ npm run demo:visuals
 Open `https://127.0.0.1:5181/?scenario=components&lang=en` and accept the local development certificate. The fixture uses HTTPS/HTTP2 on `127.0.0.1:19444`; open that origin once to accept its certificate too if needed. No browser opens automatically. Available scenarios: `components`, `upload`, `download`, `action`; use `lang=ru` for Russian. Ctrl+C stops both task-owned servers and discards fixture objects. Repeated runs may need a restart to clear previously uploaded objects before the cancel/check/retry demonstration.
 
 For the actual Java integration, use the [paired Spring setup](../0.1.0/en.md#1-upload-an-attachment-and-receive-it-in-java). Replace the fixture URL with your authorized endpoint and omit the capture-only `fetch` pacing helper. Supply a synchronous account `scope`. These examples do not provide production authentication, overwriting policy or a storage reconciliation API.
+
+## FileAttachment
+
+[Ready FileAttachment: full Spring/React integration](../integration/en.md). The ready control combines upload/download with default attachments limits and optional styles. This recording used actual Spring WebFlux + Garage S3, unlike the independent memory fixtures below.
+
+```tsx
+import { FileAttachment } from '@59alex/file-streams-react';
+import '@59alex/file-streams-react/styles.css';
+
+export function Attachment() {
+  return <FileAttachment objectsUrl="/attachments" scope="account-42"
+    objectKey="account-42:invoice.pdf" language="en" />;
+}
+```
+
+<picture><source media="(prefers-reduced-motion: reduce)" srcset="../../assets/visuals/attachment-spring-en.png"><img src="../../assets/visuals/attachment-spring-en.gif" width="800" alt="Ready attachment uploads through Spring and downloads only after confirmation"></picture>
+
+[Static image](../../assets/visuals/attachment-spring-en.png) · [Runnable source](../../examples/spring-react/TicketAttachment.tsx)
 
 ## FileUpload
 

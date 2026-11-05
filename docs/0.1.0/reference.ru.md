@@ -23,6 +23,39 @@
 | Прочитать небольшой участок для предпросмотра | `download` с range | [PartialPreview](../../examples/attachments/PartialPreview.tsx) | Смещения в байтах, не строки текста и не автоматическое возобновление |
 | Использовать свой дизайн и язык | Labels, `className`, `renderError` | [Attachments](../../examples/attachments/Attachments.tsx) | Стили не включены; сообщение ошибки не должно обещать откат |
 
+## Готовый компонент вложения
+
+`FileAttachment` объединяет выбор, загрузку, скачивание и обратную связь поверх существующих hooks. Импортируйте `@59alex/file-streams-react/styles.css` для готового вида; экспорт stylesheet содержит TypeScript declarations. [Полная интеграция приложения](../integration/ru.md) · [Исходник](../../src/attachment.tsx).
+
+`FileAttachmentProps` принимает следующие поля. В отличие от базовых hooks, endpoint и размер имеют defaults.
+
+| Prop | Default / контракт |
+| --- | --- |
+| `objectKey` | Обязательный логический ключ. Сервер проверяет доступ; в защищённом примере используется `account:filename`. |
+| `scope` | Обязательный идентификатор владельца. Меняйте синхронно при смене аккаунта/области доступа. |
+| `objectsUrl` | `/objects`; абсолютный URL или относительный browser URL. Для защищённого контроллера из документации задайте `/attachments`. Без query/fragment. |
+| `profile` | `attachments`; `FileProfile = 'attachments' \| 'media' \| 'archives'`. |
+| `maxBytes` | Необязательное явное переопределение лимита профиля. |
+| `existingFile` | Необязательный сохранённый приложением `UploadCommit`; key должен совпадать. Разрешает скачивание при mount без вызова `onCommitted`. |
+| `language` | `en`; `ru` включает русские кнопки и статусы. |
+| `accept` | Необязательный фильтр native chooser, не проверка содержимого. |
+| `fileName` | Необязательное предлагаемое имя в save picker; иначе имя выбранного файла, затем последний сегмент ключа. |
+| `destination` | Необязательный `Destination`; иначе native save picker. Если браузер не поддерживается, показывается объяснение без полного буфера. Каждому скачиванию нужен новый sink/factory. |
+| `disabled` | False; блокирует выбор/запуск/проверку, но оставляет отмену активной передачи. |
+| `className` | Дополнительный класс внешнего section; стили ограничены `.fs-attachment`. |
+| `headers`, `credentials`, `fetch` | Те же transport options, что у hooks; default credentials — `same-origin`. Смена headers сама по себе не меняет владельца. |
+| `onCommitted` | Необязательный `(commit: UploadCommit) => void`, один раз для видимого подтверждения загрузки. Здесь можно сохранить бизнес-метаданные. |
+| `onComplete` | Необязательный `(result: DownloadResult) => void`, после проверки скачивания и закрытия назначения. |
+| `reconcileUpload` | Необязательный `(key: string, signal: AbortSignal) => Promise<UploadReconciliation>`; приложение устанавливает окончательный результат неизвестной загрузки. |
+
+`UploadReconciliation = 'absent' | 'present' | 'unknown'`. Только `absent` очищает failed-состояние и разрешает новую явную попытку. `present`, `unknown`, исключения и отменённые проверки сохраняют блокировку. Без callback повтор unknown остаётся заблокированным. Потоковый протокол не предоставляет универсальный endpoint финального результата: ранний 404 не доказывает невозможность commit другого незавершённого запроса. [Политика отмены](../integration/ru.md#отмена-и-повтор).
+
+Компонент допускает одну активную передачу. Выбор замены скрывает скачивание существующего файла до нового commit. Смена scope, endpoint, key, эффективного лимита или ETag existing metadata пересоздаёт UI, отменяет работу/проверки и очищает выбор файла. Исключения callbacks обрабатывает приложение. Обычная отмена picker — ошибка скачивания, после которой возможен явный повтор.
+
+`fileProfiles` реэкспортируется из core: frozen-объекты `attachments.maxBytes` = 64 МиБ, `media.maxBytes` = 512 МиБ, `archives.maxBytes` = 16 ГиБ. Передавайте их в существующие hooks вместо повторения арифметики байтов. Клиентский профиль не может увеличить серверный лимит.
+
+`saveFileDestination(fileName?: string): Destination` создаёт фабрику native picker, имя по умолчанию `download.bin`. Picker открывается только при вызове: передавайте фабрику скачиванию, начатому непосредственно действием пользователя. При отсутствии picker бросает `TransferError('UNSUPPORTED', ...)`. FileAttachment уже использует этот default; helper нужен своим hook/component-интеграциям. При импорте пакета browser globals не читаются.
+
 ## Общие параметры: `FileStreamsOptions`
 
 Используются обоими базовыми hooks, компонентами и hook React 19. Все поля readonly.

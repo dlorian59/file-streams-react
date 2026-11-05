@@ -9,7 +9,9 @@
     "type": "git",
     "url": "git+https://github.com/dlorian59/file-streams-react.git"
   },
-  "sideEffects": false,
+  "sideEffects": [
+    "**/*.css"
+  ],
   "files": [
     "dist",
     "README.md",
@@ -17,7 +19,9 @@
     "docs",
     "assets",
     "examples/attachments",
-    "examples/visuals"
+    "examples/visuals",
+    "examples/spring-react",
+    "CONTRIBUTING.md"
   ],
   "exports": {
     ".": {
@@ -27,6 +31,10 @@
     "./react19": {
       "types": "./dist/react19.d.ts",
       "import": "./dist/react19.js"
+    },
+    "./styles.css": {
+      "types": "./dist/styles.d.ts",
+      "default": "./dist/styles.css"
     }
   },
   "types": "./dist/index.d.ts",
@@ -49,7 +57,7 @@
     "jsdom": "27.4.0"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.json",
+    "build": "tsc -p tsconfig.json && node scripts/copy-assets.mjs",
     "typecheck": "npm run build && tsc -p tsconfig.examples.json --noEmit",
     "test": "npm run build && node --test test/*.test.mjs",
     "test:package": "node scripts/package-smoke.mjs",
@@ -57,7 +65,9 @@
     "prepack": "npm run build",
     "test:browser": "npm run build && node scripts/browser-smoke.mjs",
     "demo:visuals": "npm run build && node scripts/visual-demo.mjs",
-    "capture:visuals": "npm run build && node scripts/capture-visuals.mjs"
+    "capture:visuals": "npm run build && node scripts/capture-visuals.mjs",
+    "demo:spring": "npm run build && node scripts/demo.mjs --spring",
+    "capture:attachment": "npm run build && node scripts/capture-attachment.mjs"
   },
   "publishConfig": {
     "access": "public"

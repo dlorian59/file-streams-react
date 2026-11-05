@@ -2,6 +2,7 @@
 
 [← Versions](../index.md) · [API](reference.en.md) · [README](../../README.md) · [Русский](ru.md)
 [Visual examples](../visuals/en.md)
+[Ready integration](../integration/en.md)
 
 A support ticket needs an attachment. The UI must report progress, stop work when the user leaves, show whether storage actually confirmed the upload, and download the file without building a second full copy in browser memory. These are separate responsibilities from the ticket form itself.
 

@@ -23,6 +23,39 @@ Both entries preserve `use client`; importing/rendering them on the server does 
 | Preview a bounded region | `download` range | [PartialPreview](../../examples/attachments/PartialPreview.tsx) | Byte offsets, not text lines or automatic resume |
 | Use your design system and language | Labels, `className`, `renderError` | [Attachments](../../examples/attachments/Attachments.tsx) | No bundled styles; custom error UI must not imply rollback |
 
+## Ready attachment control
+
+`FileAttachment` combines selection, upload, download and feedback on the existing hooks. Import `@59alex/file-streams-react/styles.css` for the ready appearance; the stylesheet export includes TypeScript declarations. [Complete application integration](../integration/en.md) · [Source](../../src/attachment.tsx).
+
+`FileAttachmentProps` accepts the following fields. Unlike base hooks, it supplies endpoint and size defaults.
+
+| Prop | Default / contract |
+| --- | --- |
+| `objectKey` | Required logical object key. The server must authorize it; prefer the secured example's `account:filename` form. |
+| `scope` | Required ownership identifier. Change synchronously with account/authorization changes. |
+| `objectsUrl` | `/objects`; absolute URL or relative browser URL. Use `/attachments` for the documented secured controller. No query/fragment. |
+| `profile` | `attachments`; `FileProfile = 'attachments' \| 'media' \| 'archives'`. |
+| `maxBytes` | Optional explicit override of the named profile's limit. |
+| `existingFile` | Optional `UploadCommit` persisted by the application; matching key required. Enables initial download without triggering `onCommitted`. |
+| `language` | `en`; use `ru` for Russian controls and status. |
+| `accept` | Optional native chooser filter; not content validation. |
+| `fileName` | Optional save-picker suggested name; otherwise selected filename, then final object-key segment. |
+| `destination` | Optional `Destination`; otherwise native save picker. Unsupported browsers show guidance without a buffer fallback. Supply a fresh sink/factory for each download. |
+| `disabled` | False; prevents selection/start/check actions, but active transfers can still be cancelled. |
+| `className` | Additional class on the outer section; styles use the `.fs-attachment` namespace. |
+| `headers`, `credentials`, `fetch` | Same transport options as base hooks; credentials default `same-origin`. A header change alone does not invalidate ownership. |
+| `onCommitted` | Optional `(commit: UploadCommit) => void`, once per visible confirmed upload. Persist business metadata here if needed. |
+| `onComplete` | Optional `(result: DownloadResult) => void`, after a validated download and destination close. |
+| `reconcileUpload` | Optional `(key: string, signal: AbortSignal) => Promise<UploadReconciliation>`; application establishes the final storage result after an uncertain upload. |
+
+`UploadReconciliation = 'absent' | 'present' | 'unknown'`. Only `absent` clears the failed state and permits a fresh explicit attempt. `present`, `unknown`, exceptions and aborted checks leave retry blocked. Without the callback uncertain retry stays blocked. The stream protocol has no universal final-outcome endpoint: an early 404 does not prove that another in-flight request cannot commit. [Cancellation policy](../integration/en.md#cancellation-and-retry).
+
+The component allows one active transfer at a time. A selected replacement hides existing-file download until a new commit. Scope, endpoint, key, effective limit or existing-file ETag changes replace the owned UI, abort work/checks and clear selected files. Callback exceptions belong to the application. Normal picker cancellation is a download error and can be retried explicitly.
+
+`fileProfiles` is re-exported from the core: frozen objects `attachments.maxBytes` = 64 MiB, `media.maxBytes` = 512 MiB, `archives.maxBytes` = 16 GiB. Use these with existing hooks instead of repeating byte arithmetic. A client profile cannot raise the backend's limit.
+
+`saveFileDestination(fileName?: string): Destination` creates a native picker factory, default name `download.bin`. It opens the picker only when called, so pass it to a download initiated directly by a user gesture. It throws `TransferError('UNSUPPORTED', ...)` if the runtime has no picker. FileAttachment already uses this default; the helper is for custom hook/component integrations. No browser global is accessed when importing the package.
+
 ## Shared options: `FileStreamsOptions`
 
 Used by both base hooks, both components and the React 19 hook. All fields are readonly.

@@ -1,6 +1,6 @@
 # Versions / Версии
 
-[← README](../README.md)
+[← README](../README.md) · [Spring/React EN](integration/en.md) · [Spring/React RU](integration/ru.md)
 [Visual examples](visuals/en.md) · [Визуальные примеры](visuals/ru.md)
 
 | Version / Версия | English | Русский | Source examples / Примеры |
