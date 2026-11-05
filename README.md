@@ -5,7 +5,7 @@
 
 [0.1.0 guide](docs/0.1.0/en.md) · [API reference](docs/0.1.0/reference.en.md) · [Versions](docs/index.md) · [MIT](LICENSE)
 
-React components and hooks for continuous file uploads and downloads. Add an attachment to a form with progress, cancellation and a confirmed storage result; connect the same endpoint to the [Spring Boot starter](https://github.com/59Alex/file-streams-spring-boot-starter).
+React components and hooks for continuous file uploads and downloads. Add an attachment to a form with progress, cancellation and a confirmed storage result; connect the same endpoint to the [Spring Boot starter](https://github.com/dlorian59/file-streams-spring-boot-starter).
 
 ```tsx
 import { FileUpload } from '@59alex/file-streams-react';
@@ -48,7 +48,7 @@ Progress is not confirmation: a fully read source can still fail during storage 
 
 [Руководство 0.1.0](docs/0.1.0/ru.md) · [Справочник API](docs/0.1.0/reference.ru.md) · [Версии](docs/index.md) · [MIT](LICENSE)
 
-React-компоненты и hooks для непрерывной загрузки и скачивания файлов. Подключают вложение к форме вместе с прогрессом, отменой и подтверждённым результатом сохранения. На другой стороне того же endpoint работает [Spring Boot-стартер](https://github.com/59Alex/file-streams-spring-boot-starter).
+React-компоненты и hooks для непрерывной загрузки и скачивания файлов. Подключают вложение к форме вместе с прогрессом, отменой и подтверждённым результатом сохранения. На другой стороне того же endpoint работает [Spring Boot-стартер](https://github.com/dlorian59/file-streams-spring-boot-starter).
 
 ```tsx
 import { FileUpload, russianLabels } from '@59alex/file-streams-react';

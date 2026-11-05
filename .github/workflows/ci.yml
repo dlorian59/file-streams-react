@@ -16,7 +16,7 @@ jobs:
           path: file-streams-react
       - uses: actions/checkout@v4
         with:
-          repository: 59Alex/file-streams
+          repository: dlorian59/file-streams
           path: file-streams
       - uses: actions/setup-node@v4
         with:

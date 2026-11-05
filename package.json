@@ -7,7 +7,7 @@
   "author": "Aleksandr Kashevarov",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/59Alex/file-streams-react.git"
+    "url": "git+https://github.com/dlorian59/file-streams-react.git"
   },
   "sideEffects": false,
   "files": [

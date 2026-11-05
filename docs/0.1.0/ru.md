@@ -32,7 +32,7 @@ file-streams:
     enabled: true
 ```
 
-Используйте [Java-приложение](https://github.com/59Alex/file-streams-spring-boot-starter/blob/main/example/src/main/java/example/FileStreamsApplication.java) и [полный application.yml](https://github.com/59Alex/file-streams-spring-boot-starter/blob/main/example/src/main/resources/application.yml): там HTTP/2, TLS, region, endpoint и CORS. Локально эти файлы находятся в `../file-streams-spring-boot-starter/example/`. Credentials поступают из стандартной цепочки AWS; в React они не нужны.
+Используйте [Java-приложение](https://github.com/dlorian59/file-streams-spring-boot-starter/blob/main/example/src/main/java/example/FileStreamsApplication.java) и [полный application.yml](https://github.com/dlorian59/file-streams-spring-boot-starter/blob/main/example/src/main/resources/application.yml): там HTTP/2, TLS, region, endpoint и CORS. Локально эти файлы находятся в `../file-streams-spring-boot-starter/example/`. Credentials поступают из стандартной цепочки AWS; в React они не нужны.
 
 | Действие React/браузера | Действие Java/сервера | Наблюдаемый результат |
 | --- | --- | --- |
@@ -120,7 +120,7 @@ npm run demo
 
 Откройте `https://127.0.0.1:5173/` и доверьте локальному сертификату разработки оба порта: 5173 и 19443. Выберите небольшой файл, загрузите, дождитесь записи с подтверждением и скачайте. Демо использует сертификат, созданный стартером; пути можно переопределить через `DEMO_TLS_CERT` и `DEMO_TLS_KEY`.
 
-Для настоящего S3-совместимого хранилища следуйте [инструкции стартера](https://github.com/59Alex/file-streams-spring-boot-starter#readme), передайте credentials стандартной цепочкой AWS и запустите `scripts/run-example.sh` без аргумента fixture. Fixture находится только в тестовых исходниках примера и не является production-адаптером.
+Для настоящего S3-совместимого хранилища следуйте [инструкции стартера](https://github.com/dlorian59/file-streams-spring-boot-starter#readme), передайте credentials стандартной цепочкой AWS и запустите `scripts/run-example.sh` без аргумента fixture. Fixture находится только в тестовых исходниках примера и не является production-адаптером.
 
 При запущенных серверах `npm run test:browser` проверяет настоящее взаимодействие Chromium → Spring по HTTP/2 и равенство байтов PUT/GET. Диалог сохранения в этой проверке заменён тестовым writable sink; это не автоматизация системного диалога.
 
@@ -139,6 +139,6 @@ npm run demo
 - `uploadOutcome: unknown`: сначала проверьте состояние в приложении/хранилище, затем решайте, нужен ли новый поток и повтор.
 - Ошибка сертификата или готовности: сначала запустите Spring-пример и проверьте разрешённые origins.
 
-Локально проверены восемь содержательных lifecycle/transfer/Action тестов, строгая компиляция примеров, установка npm-архива в чистый consumer с SSR, Chromium HTTP/2 upload/commit/download и отмена с известной длиной через Spring Boot 4.1.2. [Подробная проверка](../VERIFICATION.md). Парный запуск использовал ограниченный fixture в памяти, **не S3**. полный браузерный сценарий React 18, upload в Safari/Firefox, системные диалоги сохранения, обрывы сети и production-прокси не проверялись. Отдельные результаты хранения и границы надёжности описаны в [базовой библиотеке](https://github.com/59Alex/file-streams).
+Локально проверены восемь содержательных lifecycle/transfer/Action тестов, строгая компиляция примеров, установка npm-архива в чистый consumer с SSR, Chromium HTTP/2 upload/commit/download и отмена с известной длиной через Spring Boot 4.1.2. [Подробная проверка](../VERIFICATION.md). Парный запуск использовал ограниченный fixture в памяти, **не S3**. полный браузерный сценарий React 18, upload в Safari/Firefox, системные диалоги сохранения, обрывы сети и production-прокси не проверялись. Отдельные результаты хранения и границы надёжности описаны в [базовой библиотеке](https://github.com/dlorian59/file-streams).
 
 [← Версии](../index.md) · [API](reference.ru.md) · [README](../../README.md)
