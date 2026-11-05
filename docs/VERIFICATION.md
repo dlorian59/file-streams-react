@@ -38,3 +38,22 @@ The optional entry uses `useActionState`; the React 18 entry never imports it. A
 Дополнительный entry использует `useActionState`, основной React 18 его не импортирует. Тесты Actions работают в StrictMode: отмена делает очередь недействительной, смена scope и unmount не дают старым Actions запустить новый запрос. Исходный `TransferError` и неизвестный результат сохраняются. В настоящем браузере проверена нативная форма с ожиданием commit и очисткой поля. Это тот же bounded memory fixture, не проверка S3.
 
 [EN reference](0.1.0/reference.en.md) · [Справочник RU](0.1.0/reference.ru.md) · [← README](../README.md)
+
+## Visual guides — OSS-011
+
+[Visual guide EN](visuals/en.md) · [Визуальное руководство RU](visuals/ru.md)
+
+`npm run capture:visuals` completed eight headless Chromium recordings: four scenarios in English and Russian. The capture uses its own bounded **Node HTTP/2 memory fixture**, not the Spring fixture described above and not S3. Both task-owned listeners (5181 and 19444) and browser contexts stopped after capture.
+
+| Recorded surface | Checked observations |
+| --- | --- |
+| `FileUpload` + `FileDownload` | Selected filename, actual upload click, all bytes read before confirmation, disabled download before commit, download progress, closed OPFS destination, exact 262144-byte content comparison |
+| `useFileUpload` + `TransferStatus` | Intermediate byte count, cancellation with `ABORTED / unknown`, disabled retry before object check, fixture HEAD 404, new explicit stream attempt and confirmed commit |
+| `useFileDownload` + `TransferStatus` | Actual range request, intermediate progress, validated HTTP 206 / 32768 bytes and bounded text preview |
+| `useFileUploadAction` | Native React 19 form submission, pending submit disabled before commit, confirmed result and automatic input reset |
+
+All recordings had zero page errors and no horizontal overflow at 800px. Eight GIFs are 511998–1893535 bytes each, below 2 MiB. Final static PNGs and separate cancelled-state PNGs are included for reduced motion. Small native File reads can jump directly to 100%; the recordings preserve that behavior instead of synthesizing intermediate upload percentages.
+
+`npm run typecheck` checked the examples; twelve complete TSX integration snippets extracted from the EN/RU guides also passed TypeScript compilation. All 220 local Markdown/image links and anchors passed a path check. `git diff --check` passed. Runtime library source/API is unchanged.
+
+Восемь записей проверяют настоящие действия и состояния UI на ограниченном Node fixture, а не надёжность S3 или Spring-интеграцию. Файловое назначение — настоящий OPFS; полное чтение маленького сохранённого файла используется только скриптом для сравнения байтов, не примером скачивания. Исходники записи и сервера находятся в `scripts/capture-visuals.mjs` и `scripts/visual-demo.mjs`; raw videos и `verification.json` остаются в игнорируемом `output/playwright/visuals/`.

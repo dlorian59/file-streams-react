@@ -1,6 +1,7 @@
 # API reference — file-streams-react 0.1.0
 
 [← Guide](en.md) · [Versions](../index.md) · [README](../../README.md) · [Русский](reference.ru.md)
+[Visual examples](../visuals/en.md)
 
 ## Choose the entry
 

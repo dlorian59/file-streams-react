@@ -1,6 +1,7 @@
 # Справочник API — file-streams-react 0.1.0
 
 [← Руководство](ru.md) · [Версии](../index.md) · [README](../../README.md) · [English](reference.en.md)
+[Визуальные примеры](../visuals/ru.md)
 
 ## Выбор точки входа
 

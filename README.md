@@ -3,9 +3,15 @@
 <details name="readme-language">
 <summary><picture><source media="(prefers-color-scheme: dark)" srcset="assets/lang-en-dark.svg"><img src="assets/lang-en-light.svg" width="42" height="26" alt="EN"></picture></summary>
 
-[0.1.0 guide](docs/0.1.0/en.md) · [API reference](docs/0.1.0/reference.en.md) · [Versions](docs/index.md) · [MIT](LICENSE)
+[0.1.0 guide](docs/0.1.0/en.md) · [API reference](docs/0.1.0/reference.en.md) · [Versions](docs/index.md) · [MIT](LICENSE) · [Visual component guide](docs/visuals/en.md)
 
 React components and hooks for continuous file uploads and downloads. Add an attachment to a form with progress, cancellation and a confirmed storage result; connect the same endpoint to the [Spring Boot starter](https://github.com/dlorian59/file-streams-spring-boot-starter).
+
+<picture><source media="(prefers-reduced-motion: reduce)" srcset="assets/visuals/components-en.png"><img src="assets/visuals/components-en.gif" width="800" alt="Real file selection, upload confirmation and streaming download in React"></picture>
+
+[Static image](assets/visuals/components-en.png) · [Visual component guide: FileUpload, FileDownload, TransferStatus + hooks](docs/visuals/en.md)
+
+Local paced HTTP/2 memory fixture, not S3. Read progress and storage confirmation are separate states.
 
 ```tsx
 import { FileUpload } from '@59alex/file-streams-react';
@@ -46,9 +52,15 @@ Progress is not confirmation: a fully read source can still fail during storage 
 <details name="readme-language" open>
 <summary><picture><source media="(prefers-color-scheme: dark)" srcset="assets/lang-ru-dark.svg"><img src="assets/lang-ru-light.svg" width="42" height="26" alt="RU"></picture></summary>
 
-[Руководство 0.1.0](docs/0.1.0/ru.md) · [Справочник API](docs/0.1.0/reference.ru.md) · [Версии](docs/index.md) · [MIT](LICENSE)
+[Руководство 0.1.0](docs/0.1.0/ru.md) · [Справочник API](docs/0.1.0/reference.ru.md) · [Версии](docs/index.md) · [MIT](LICENSE) · [Визуальное руководство](docs/visuals/ru.md)
 
 React-компоненты и hooks для непрерывной загрузки и скачивания файлов. Подключают вложение к форме вместе с прогрессом, отменой и подтверждённым результатом сохранения. На другой стороне того же endpoint работает [Spring Boot-стартер](https://github.com/dlorian59/file-streams-spring-boot-starter).
+
+<picture><source media="(prefers-reduced-motion: reduce)" srcset="assets/visuals/components-ru.png"><img src="assets/visuals/components-ru.gif" width="800" alt="Реальный выбор файла, подтверждение загрузки и потоковое скачивание в React"></picture>
+
+[Статичный кадр](assets/visuals/components-ru.png) · [Визуальное руководство: FileUpload, FileDownload, TransferStatus + hooks](docs/visuals/ru.md)
+
+Локальный HTTP/2 memory fixture с задержкой, не S3. Прогресс чтения и подтверждение сохранения — разные состояния.
 
 ```tsx
 import { FileUpload, russianLabels } from '@59alex/file-streams-react';

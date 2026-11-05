@@ -1,6 +1,7 @@
 # File streams React 0.1.0 — an attachment from screen to storage
 
 [← Versions](../index.md) · [API](reference.en.md) · [README](../../README.md) · [Русский](ru.md)
+[Visual examples](../visuals/en.md)
 
 A support ticket needs an attachment. The UI must report progress, stop work when the user leaves, show whether storage actually confirmed the upload, and download the file without building a second full copy in browser memory. These are separate responsibilities from the ticket form itself.
 

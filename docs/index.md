@@ -1,6 +1,7 @@
 # Versions / Версии
 
 [← README](../README.md)
+[Visual examples](visuals/en.md) · [Визуальные примеры](visuals/ru.md)
 
 | Version / Версия | English | Русский | Source examples / Примеры |
 | --- | --- | --- | --- |

@@ -16,7 +16,8 @@
     "LICENSE",
     "docs",
     "assets",
-    "examples/attachments"
+    "examples/attachments",
+    "examples/visuals"
   ],
   "exports": {
     ".": {
@@ -54,7 +55,9 @@
     "test:package": "node scripts/package-smoke.mjs",
     "demo": "npm run build && node scripts/demo.mjs",
     "prepack": "npm run build",
-    "test:browser": "npm run build && node scripts/browser-smoke.mjs"
+    "test:browser": "npm run build && node scripts/browser-smoke.mjs",
+    "demo:visuals": "npm run build && node scripts/visual-demo.mjs",
+    "capture:visuals": "npm run build && node scripts/capture-visuals.mjs"
   },
   "publishConfig": {
     "access": "public"

@@ -6,6 +6,8 @@
   },
   "include": [
     "src",
-    "examples/attachments/*.tsx"
+    "examples/attachments/*.tsx",
+    "examples/visuals/**/*.ts",
+    "examples/visuals/**/*.tsx"
   ]
 }
